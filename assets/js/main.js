@@ -145,8 +145,8 @@ const TAXA_PADRAO = 12;   // Para bairros nao mapeados
 ────────────────────────────────────────────────────────── */
 const HORARIO_INICIO  = { h: 14, m: 30 };
 const HORARIO_FIM     = { h: 18, m:  0 };
-//const WHATSAPP_NUM = '5511951260263';
-const WHATSAPP_NUM    = '5511912959858';
+const WHATSAPP_NUM = '5511951260263';
+//const WHATSAPP_NUM    = '5511912959858';
 
 /* ──────────────────────────────────────────────────────────
    CONFIGURACOES PIX
