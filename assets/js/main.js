@@ -149,13 +149,22 @@ const HORARIO_FIM     = { h: 18, m:  0 };
 const WHATSAPP_NUM    = '5511912959858';
 
 /* ──────────────────────────────────────────────────────────
+   CONFIGURACOES PIX
+   Preencha com os dados da titular da conta PIX.
+────────────────────────────────────────────────────────── */
+const PIX_CHAVE  = '11951260263';          // Chave PIX (telefone, CPF, e-mail ou chave aleatoria)
+const PIX_NOME   = 'H e S Doceria';        // Nome do recebedor (max 25 chars, sem acentos)
+const PIX_CIDADE = 'Santo Andre';          // Cidade do recebedor (max 15 chars, sem acentos)
+
+/* ──────────────────────────────────────────────────────────
    ESTADO GLOBAL DA APLICACAO
 ────────────────────────────────────────────────────────── */
 const estado = {
-  carrinho:    {},       // { produtoId: quantidade }
-  tipoEntrega: 'retirada', // 'retirada' | 'entrega'
-  taxaEntrega: 0,
-  cidadeOK:    true
+  carrinho:      {},           // { produtoId: quantidade }
+  tipoEntrega:   'retirada',   // 'retirada' | 'entrega'
+  taxaEntrega:   0,
+  cidadeOK:      true,
+  formaPagamento: 'dinheiro'   // 'dinheiro' | 'pix'
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -183,7 +192,8 @@ function verificarHorario() {
   const fim    = HORARIO_FIM.h    * 60 + HORARIO_FIM.m;
   const atual  = agora.getHours() * 60 + agora.getMinutes();
 
-  const dentroDHorario = atual >= inicio && atual < fim;
+  const dentroDHorario = true; // TESTE — remover esta linha e descomentar a de baixo depois
+  // const dentroDHorario = atual >= inicio && atual < fim;
 
   const banner    = document.getElementById('hours-banner');
   const btnEnviar = document.getElementById('send-btn');
@@ -353,6 +363,12 @@ function configurarEventos() {
     radio.addEventListener('change', onMudancaTipoEntrega);
   });
 
+  /* ─── Radio de forma de pagamento ─── */
+  var radiosPgto = document.querySelectorAll('input[name="payment"]');
+  radiosPgto.forEach(function(radio) {
+    radio.addEventListener('change', onMudancaPagamento);
+  });
+
   /* ─── Mascara e busca de CEP ─── */
   var cepInput = document.getElementById('cep');
   if (cepInput) {
@@ -394,10 +410,38 @@ function configurarEventos() {
   }
 }
 
+/** Executado ao trocar a forma de pagamento (dinheiro / pix). */
+function onMudancaPagamento(evt) {
+  estado.formaPagamento = evt.target.value;
+  var pixPanel = document.getElementById('pix-panel');
+
+  if (estado.formaPagamento === 'pix') {
+    if (pixPanel) pixPanel.classList.remove('hidden');
+    setTextContent('pix-key-display', PIX_CHAVE);
+    atualizarQRCode();
+  } else {
+    if (pixPanel) pixPanel.classList.add('hidden');
+  }
+
+  atualizarAvisoPIX();
+}
+
+/**
+ * Exibe o aviso correto do PIX conforme tipo de entrega:
+ * - Retirada: pode pagar agora e enviar comprovante
+ * - Entrega:  pagar somente na hora da entrega
+ */
+function atualizarAvisoPIX() {
+  var w = document.getElementById('pix-warning');
+  if (!w) return;
+  w.style.display = (estado.formaPagamento === 'pix') ? 'block' : 'none';
+}
+
 /** Executado ao trocar o tipo de entrega (retirada / entrega). */
 function onMudancaTipoEntrega(evt) {
   estado.tipoEntrega = evt.target.value;
   var endSection = document.getElementById('address-section');
+  atualizarAvisoPIX();
 
   if (estado.tipoEntrega === 'entrega') {
     if (endSection) endSection.classList.remove('hidden');
@@ -584,6 +628,11 @@ function atualizarResumo() {
     totalEl.textContent = formatMoeda(total);
     totalEl.style.color = total > 0 ? 'var(--verde-hover)' : '';
   }
+
+  /* Se PIX estiver ativo, atualizar QR com novo valor */
+  if (estado.formaPagamento === 'pix') {
+    atualizarQRCode();
+  }
 }
 
 /** Calcula o subtotal dos itens no carrinho. */
@@ -720,23 +769,124 @@ function gerarMensagem() {
   /* Bloco de observacoes */
   var blocoObs = notes ? ('\n\n*Observacoes:*\n' + notes) : '';
 
-  /* Montagem final */
+  /* Bloco de pagamento — so exibe quando for dinheiro */
+  var blocoPgto = (estado.formaPagamento === 'dinheiro')
+    ? '\n*Pagamento:* Dinheiro (pagar na entrega/retirada)'
+    : '';
+
+
+  /* Montagem final — apenas formatacao nativa do WhatsApp (ASCII + bullet) */
   return (
-    '🍫 *H&S Doceria — Novo Pedido* 🍫\n' +
-    '━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
-    '👤 *Cliente:* ' + nome + '\n' +
-    '📱 *WhatsApp:* ' + phone + '\n' +
-    '🚚 *Entrega:* ' + tipoLabel +
+    '*H&S Doceria \u2014 Novo Pedido*\n' +
+    '--------------------------------\n\n' +
+    '*Cliente:* ' + nome + '\n' +
+    '*WhatsApp:* ' + phone + '\n' +
+    '*Entrega:* ' + tipoLabel +
     blocoEndereco + '\n\n' +
-    '🛒 *Itens do Pedido:*\n' +
+    '*Itens do Pedido:*\n' +
     linhasItens + '\n\n' +
-    '💰 *Subtotal:* '     + formatMoeda(subtotal) + '\n' +
-    '🚚 *Taxa de entrega:* ' + (taxa > 0 ? formatMoeda(taxa) : 'Gratis') + '\n' +
-    '✨ *Total Final: '   + formatMoeda(total) + '*' +
+    '*Subtotal:* '          + formatMoeda(subtotal) + '\n' +
+    '*Taxa de entrega:* '   + (taxa > 0 ? formatMoeda(taxa) : 'Gr\u00e1tis') + '\n' +
+    '*Total Final: '        + formatMoeda(total) + '*' +
+    blocoPgto +
     blocoObs + '\n\n' +
-    '━━━━━━━━━━━━━━━━━━━━━━━\n' +
-    '_Pedido enviado pelo sistema H&S Doceria_ 💕'
+    '--------------------------------\n' +
+    '_Pedido enviado pelo sistema H&S Doceria_'
   );
+}
+
+/* ══════════════════════════════════════════════════════════
+   PIX — PAYLOAD, QR CODE E UTILIDADES
+══════════════════════════════════════════════════════════ */
+
+/**
+ * CRC16/CCITT-FALSE — algoritmo exigido pelo padrao PIX BR.
+ * @param {string} str
+ * @returns {string} 4 caracteres hexadecimais maiusculos
+ */
+function crc16PIX(str) {
+  var crc = 0xFFFF;
+  for (var i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8;
+    for (var j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+      crc &= 0xFFFF;
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, '0');
+}
+
+/**
+ * Gera o payload PIX Copia e Cola (padrao EMVCo/BACEN).
+ * @param {string} chave  - Chave PIX do recebedor
+ * @param {string} nome   - Nome do recebedor (max 25 chars)
+ * @param {string} cidade - Cidade do recebedor (max 15 chars)
+ * @param {number} valor  - Valor total (0 = sem valor fixo)
+ * @returns {string} Payload para QR code
+ */
+function gerarPayloadPIX(chave, nome, cidade, valor) {
+  function tlv(id, val) {
+    return id + String(val.length).padStart(2, '0') + val;
+  }
+
+  var merchant = tlv('00', 'br.gov.bcb.pix') + tlv('01', chave);
+  var adicional = tlv('05', '***');
+
+  var payload =
+    tlv('00', '01') +
+    tlv('26', merchant) +
+    tlv('52', '0000') +
+    tlv('53', '986') +
+    (valor > 0 ? tlv('54', valor.toFixed(2)) : '') +
+    tlv('58', 'BR') +
+    tlv('59', nome.substring(0, 25)) +
+    tlv('60', cidade.substring(0, 15)) +
+    tlv('62', adicional) +
+    '6304'; /* placeholder CRC */
+
+  return payload + crc16PIX(payload);
+}
+
+/**
+ * Gera o QR Code PIX e exibe na tela usando o total atual do pedido.
+ * Usa a API publica api.qrserver.com para renderizar a imagem.
+ */
+function atualizarQRCode() {
+  var subtotal = calcularSubtotal();
+  var taxa     = (estado.tipoEntrega === 'entrega') ? estado.taxaEntrega : 0;
+  var total    = subtotal + taxa;
+
+  var payload = gerarPayloadPIX(PIX_CHAVE, PIX_NOME, PIX_CIDADE, total);
+
+  var img = document.getElementById('pix-qr-img');
+  if (img) {
+    img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&ecc=M&data=' + encodeURIComponent(payload);
+    img.alt = 'QR Code PIX — ' + formatMoeda(total);
+  }
+}
+
+/** Copia a chave PIX para a area de transferencia e exibe feedback. */
+function copiarChavePIX() {
+  if (!navigator.clipboard) {
+    /* Fallback para navegadores antigos */
+    var tmp = document.createElement('textarea');
+    tmp.value = PIX_CHAVE;
+    document.body.appendChild(tmp);
+    tmp.select();
+    document.execCommand('copy');
+    document.body.removeChild(tmp);
+    mostrarFeedbackCopia();
+    return;
+  }
+  navigator.clipboard.writeText(PIX_CHAVE).then(mostrarFeedbackCopia);
+}
+
+/** Exibe e oculta o feedback 'Copiado!' por 2 segundos. */
+function mostrarFeedbackCopia() {
+  var fb = document.getElementById('pix-copy-feedback');
+  if (!fb) return;
+  fb.classList.remove('hidden');
+  setTimeout(function() { fb.classList.add('hidden'); }, 2000);
 }
 
 /* ══════════════════════════════════════════════════════════

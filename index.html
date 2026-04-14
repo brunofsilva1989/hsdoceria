@@ -169,6 +169,65 @@
     </section>
 
     <!-- ═══════════════════════════════════════
+         FORMA DE PAGAMENTO
+    ════════════════════════════════════════ -->
+    <section class="section" id="payment-section">
+      <h2 class="section-title">
+        <span class="section-icon">💳</span>
+        Forma de Pagamento
+      </h2>
+      <p class="section-note">
+        O pagamento é realizado <strong>na hora da entrega ou retirada</strong>.
+      </p>
+
+      <div class="delivery-options">
+
+        <label class="delivery-option">
+          <input type="radio" name="payment" value="dinheiro" checked>
+          <div class="delivery-card">
+            <span class="delivery-card-icon">💵</span>
+            <span class="delivery-card-label">Dinheiro</span>
+            <span class="delivery-card-desc">Pague no recebimento</span>
+          </div>
+        </label>
+
+        <label class="delivery-option">
+          <input type="radio" name="payment" value="pix">
+          <div class="delivery-card">
+            <span class="delivery-card-icon">📲</span>
+            <span class="delivery-card-label">PIX</span>
+            <span class="delivery-card-desc">Pague no recebimento</span>
+          </div>
+        </label>
+
+      </div>
+
+      <!-- Painel PIX (visível só quando PIX estiver selecionado) -->
+      <div id="pix-panel" class="pix-panel hidden">
+        <div class="pix-key-info">
+          <span class="pix-key-label">Chave PIX</span>
+          <div class="pix-key-row">
+            <span id="pix-key-display" class="pix-key-value"></span>
+            <button class="pix-copy-btn" onclick="copiarChavePIX()" id="pix-copy-btn" title="Copiar chave">
+              📋 Copiar
+            </button>
+          </div>
+          <span id="pix-copy-feedback" class="pix-copy-feedback hidden">✓ Copiado!</span>
+        </div>
+
+        <div class="pix-qr-wrap">
+          <p class="pix-qr-label">QR Code · Copia e Cola</p>
+          <img id="pix-qr-img" class="pix-qr-img" src="" alt="QR Code PIX" loading="lazy">
+          <p class="pix-qr-hint">Escaneie com o app do seu banco</p>
+        </div>
+
+        <div class="pix-warning" id="pix-warning" style="display:none">
+          ✅ Após finalizar o pedido, realize o pagamento via PIX e envie o comprovante para a atendente pelo WhatsApp.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
          DADOS DA CLIENTE
     ════════════════════════════════════════ -->
     <section class="section" id="customer-section">
