@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="theme-color" content="#66D1C1">
+  <title>H&amp;S Doceria — Faça seu Pedido</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════
+       HEADER
+  ════════════════════════════════════════ -->
+  <header class="header">
+    <div class="header-inner">
+      <img src="assets/img/logo.png" alt="Logo H&amp;S Doceria" class="logo">
+      <div>
+        <h1 class="brand-name">H<span>&amp;</span>S Doceria</h1>
+        <p class="brand-tagline">✨ Feito com amor</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════
+       BANNER: FORA DO HORÁRIO (oculto por padrão, ativado via JS)
+  ════════════════════════════════════════ -->
+  <div id="hours-banner" class="hours-banner hidden">
+    <div class="hours-banner-inner">
+      <span class="hours-icon">🕐</span>
+      <div>
+        <strong>Fora do horário de atendimento</strong>
+        <p>No momento não estamos recebendo pedidos.<br>
+           Nosso horário é das <strong>14:30 às 18:00</strong>. Volte em breve! 💛</p>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+
+    <!-- ═══════════════════════════════════════
+         CARDÁPIO
+    ════════════════════════════════════════ -->
+    <section class="section" id="cardapio">
+      <h2 class="section-title">
+        <span class="section-icon">🍫</span>
+        Nosso Cardápio
+      </h2>
+      <div class="products-grid" id="products-grid">
+        <!-- Cards gerados dinamicamente pelo JavaScript -->
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         SEU PEDIDO
+    ════════════════════════════════════════ -->
+    <section class="section" id="cart-section">
+      <h2 class="section-title">
+        <span class="section-icon">🛒</span>
+        Seu Pedido
+      </h2>
+      <div id="cart-empty" class="cart-empty">
+        <p>Nenhum item adicionado ainda.</p>
+        <p class="cart-empty-hint">Selecione os produtos acima 💕</p>
+      </div>
+      <div id="cart-items" class="cart-items hidden"></div>
+      <div id="cart-subtotal" class="cart-subtotal hidden">
+        <span>Subtotal dos produtos</span>
+        <span id="cart-subtotal-value">R$ 0,00</span>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         TIPO DE ENTREGA
+    ════════════════════════════════════════ -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-icon">🚚</span>
+        Como prefere receber?
+      </h2>
+      <div class="delivery-options">
+
+        <label class="delivery-option">
+          <input type="radio" name="delivery" value="retirada" checked>
+          <div class="delivery-card">
+            <span class="delivery-card-icon">🏠</span>
+            <span class="delivery-card-label">Retirada</span>
+            <span class="delivery-card-desc">Sem taxa · Grátis</span>
+          </div>
+        </label>
+
+        <label class="delivery-option">
+          <input type="radio" name="delivery" value="entrega">
+          <div class="delivery-card">
+            <span class="delivery-card-icon">🛵</span>
+            <span class="delivery-card-label">Entrega</span>
+            <span class="delivery-card-desc">Taxa por bairro</span>
+          </div>
+        </label>
+
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         ENDEREÇO DE ENTREGA (oculto quando Retirada)
+    ════════════════════════════════════════ -->
+    <section class="section hidden" id="address-section">
+      <h2 class="section-title">
+        <span class="section-icon">📍</span>
+        Endereço de Entrega
+      </h2>
+      <p class="section-note">
+        Realizamos entregas somente em <strong>Santo André</strong>.
+      </p>
+
+      <!-- CEP -->
+      <div class="form-group">
+        <label for="cep">CEP</label>
+        <div class="cep-wrapper">
+          <input type="text" id="cep" class="input" placeholder="00000-000" maxlength="9" inputmode="numeric" autocomplete="postal-code">
+          <span id="cep-spinner" class="cep-spinner hidden">⏳</span>
+        </div>
+        <span id="cep-error"  class="field-error hidden"></span>
+        <span id="city-error" class="field-error hidden">⚠ No momento atendemos somente Santo André.</span>
+      </div>
+
+      <!-- Rua + Número -->
+      <div class="form-row">
+        <div class="form-group fg-grow">
+          <label for="street">Rua / Avenida</label>
+          <input type="text" id="street" class="input" placeholder="Nome da rua" autocomplete="address-line1">
+        </div>
+        <div class="form-group fg-small">
+          <label for="number">Número</label>
+          <input type="text" id="number" class="input" placeholder="Nº" autocomplete="address-line2">
+        </div>
+      </div>
+
+      <!-- Bairro + Cidade + UF -->
+      <div class="form-row">
+        <div class="form-group fg-grow">
+          <label for="neighborhood">Bairro</label>
+          <input type="text" id="neighborhood" class="input" placeholder="Seu bairro">
+        </div>
+        <div class="form-group fg-grow">
+          <label for="city">Cidade</label>
+          <input type="text" id="city" class="input" placeholder="Cidade" autocomplete="address-level2">
+        </div>
+        <div class="form-group fg-uf">
+          <label for="uf">UF</label>
+          <input type="text" id="uf" class="input" placeholder="SP" maxlength="2" autocomplete="address-level1">
+        </div>
+      </div>
+
+      <!-- Complemento -->
+      <div class="form-group">
+        <label for="complement">Complemento</label>
+        <input type="text" id="complement" class="input" placeholder="Ap., bloco, referência... (opcional)">
+      </div>
+
+      <!-- Card com taxa calculada -->
+      <div id="delivery-fee-card" class="delivery-fee-card hidden">
+        <span>Taxa de entrega para <strong id="fee-neighborhood-name">…</strong></span>
+        <span id="delivery-fee-value" class="fee-value">R$ 0,00</span>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         DADOS DA CLIENTE
+    ════════════════════════════════════════ -->
+    <section class="section" id="customer-section">
+      <h2 class="section-title">
+        <span class="section-icon">💌</span>
+        Seus Dados
+      </h2>
+
+      <div class="form-group">
+        <label for="name">Nome completo</label>
+        <input type="text" id="name" class="input" placeholder="Como devemos chamar você?" autocomplete="name">
+      </div>
+
+      <div class="form-group">
+        <label for="phone">WhatsApp</label>
+        <input type="tel" id="phone" class="input" placeholder="(11) 99999-9999" maxlength="15" inputmode="numeric" autocomplete="tel">
+      </div>
+
+      <div class="form-group">
+        <label for="notes">Observações do pedido</label>
+        <textarea id="notes" class="input" rows="3"
+          placeholder="Alguma observação especial? (alergia, preferência, etc.)"></textarea>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         RESUMO FINAL + ENVIO
+    ════════════════════════════════════════ -->
+    <section class="section" id="summary-section">
+      <h2 class="section-title">
+        <span class="section-icon">✨</span>
+        Resumo do Pedido
+      </h2>
+
+      <div class="summary-card">
+        <div class="summary-row">
+          <span>Subtotal dos produtos</span>
+          <span id="summary-subtotal">R$ 0,00</span>
+        </div>
+        <div class="summary-row">
+          <span id="summary-fee-label">Tipo de entrega</span>
+          <span id="summary-fee">Grátis ✓</span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-row summary-total">
+          <span>Total final</span>
+          <span id="summary-total">R$ 0,00</span>
+        </div>
+      </div>
+
+      <!-- Mensagens de erro de validação -->
+      <div id="form-errors" class="form-errors hidden"></div>
+
+      <!-- Botão principal -->
+      <button id="send-btn" class="btn-send" onclick="enviarPedido()">
+        <span class="btn-icon">💬</span>
+        Enviar Pedido via WhatsApp
+      </button>
+
+      <!-- Aviso de fora do horário (abaixo do botão) -->
+      <p id="out-of-hours-msg" class="out-of-hours-msg hidden">
+        🕐 No momento não estamos recebendo pedidos.<br>
+        Nosso horário é das <strong>14:30 às 18:00</strong>.
+      </p>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>H&amp;S Doceria — Feito com amor 💕</p>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
